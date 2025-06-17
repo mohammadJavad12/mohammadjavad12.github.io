@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classroom Chat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #f4f6f8;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      background-color: #0077ff;
+      color: white;
+      padding: 1rem;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+    #chat-container {
+      display: flex;
+      flex: 1;
+      height: 100%;
+    }
+    #users {
+      width: 200px;
+      background: #e0e7ff;
+      padding: 1rem;
+      overflow-y: auto;
+      border-right: 1px solid #ccc;
+    }
+    #chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+    }
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    #messages li {
+      margin-bottom: 10px;
+      padding: 8px;
+      background: white;
+      border-radius: 6px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    #system-msg {
+      color: gray;
+      font-size: 0.9rem;
+    }
+    #message-form {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    button {
+      background-color: #0077ff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #join-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    #chat-container.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>Classroom Chat</header>
+  <div id="join-container">
+    <input id="username" type="text" placeholder="Enter your name">
+    <button onclick="joinChat()">Join Chat</button>
+  </div>
+  <div id="chat-container" class="hidden">
+    <div id="users">
+      <h4>Users</h4>
+      <ul id="user-list"></ul>
+    </div>
+    <div id="chat">
+      <ul id="messages"></ul>
+      <form id="message-form" onsubmit="sendMessage(event)">
+        <input id="message" autocomplete="off" placeholder="Type a message..." />
+        <button>Send</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script>
+    const socket = io();
+
+    function joinChat() {
+      const username = document.getElementById("username").value.trim();
+      if (!username) return;
+      socket.emit("join", { username });
+      document.getElementById("join-container").classList.add("hidden");
+      document.getElementById("chat-container").classList.remove("hidden");
+    }
+
+    socket.on("message", (msg) => {
+      const li = document.createElement("li");
+      li.innerHTML = `<strong>${msg.from}</strong>: ${msg.content} <span style="font-size: 0.8rem; color: gray">${new Date(msg.timestamp).toLocaleTimeString()}</span>`;
+      document.getElementById("messages").appendChild(li);
+    });
+
+    socket.on("system", (msg) => {
+      const li = document.createElement("li");
+      li.textContent = `🔔 ${msg}`;
+      li.id = "system-msg";
+      document.getElementById("messages").appendChild(li);
+    });
+
+    socket.on("user_list", (users) => {
+      const list = document.getElementById("user-list");
+      list.innerHTML = "";
+      users.forEach(user => {
+        const li = document.createElement("li");
+        li.textContent = user;
+        list.appendChild(li);
+      });
+    });
+
+    function sendMessage(event) {
+      event.preventDefault();
+      const input = document.getElementById("message");
+      const value = input.value.trim();
+      if (value) {
+        socket.emit("message", value);
+        input.value = "";
+      }
+    }
+  </script>
+</body>
+</html>
