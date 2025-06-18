@@ -5,7 +5,7 @@ from pathlib import Path
 import json
 import os
 
-app = Flask(__name__)
+app = Flask(__name__,template_folder='Templates')
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
