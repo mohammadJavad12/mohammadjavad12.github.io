@@ -3,8 +3,7 @@ from flask_socketio import SocketIO, emit
 from datetime import datetime
 import os
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
+app = Flask(__name__,template_folder='Templates')
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 
@@ -36,6 +35,7 @@ def handle_disconnect():
     username = users.pop(request.sid, 'Unknown')
     emit('system', f"{username} has left the chat.", broadcast=True)
     emit('user_list', list(users.values()), broadcast=True)
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
