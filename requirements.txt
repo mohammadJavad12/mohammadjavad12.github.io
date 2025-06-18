@@ -1,2 +1,4 @@
 flask
 flask-socketio
+SQLAlchemy
+psycopg2-binary
