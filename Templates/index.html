@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Classroom Chat</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     body {
       margin: 0;
@@ -93,7 +93,7 @@
 <body>
   <header>Classroom Chat</header>
   <div id="join-container">
-    <input id="username" type="text" placeholder="Enter your name">
+    <input id="username" type="text" placeholder="Enter your name" />
     <button onclick="joinChat()">Join Chat</button>
   </div>
   <div id="chat-container" class="hidden">
@@ -113,26 +113,32 @@
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script>
     const socket = io();
+    let username = null;
 
     function joinChat() {
-      const username = document.getElementById("username").value.trim();
+      username = document.getElementById("username").value.trim();
       if (!username) return;
       socket.emit("join", { username });
       document.getElementById("join-container").classList.add("hidden");
       document.getElementById("chat-container").classList.remove("hidden");
+      document.getElementById("message").focus();
     }
 
-    socket.on("message", (msg) => {
+    function appendMessage(msg) {
       const li = document.createElement("li");
       li.innerHTML = `<strong>${msg.from}</strong>: ${msg.content} <span style="font-size: 0.8rem; color: gray">${new Date(msg.timestamp).toLocaleTimeString()}</span>`;
       document.getElementById("messages").appendChild(li);
-    });
+      document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+    }
+
+    socket.on("message", (msg) => appendMessage(msg));
 
     socket.on("system", (msg) => {
       const li = document.createElement("li");
       li.textContent = `🔔 ${msg}`;
       li.id = "system-msg";
       document.getElementById("messages").appendChild(li);
+      document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
     });
 
     socket.on("user_list", (users) => {
@@ -152,6 +158,7 @@
       if (value) {
         socket.emit("message", value);
         input.value = "";
+        input.focus();
       }
     }
   </script>
